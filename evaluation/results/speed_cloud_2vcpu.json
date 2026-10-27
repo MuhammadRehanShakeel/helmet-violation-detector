@@ -1,0 +1,10 @@
+{
+  "cpu": "x86_64",
+  "cpu_threads_used": 2,
+  "logical_cpus": 2,
+  "detector_ms_per_frame": 87.3,
+  "plate_ocr_ms": 553.8,
+  "frames_per_second": 3.9,
+  "video_seconds_per_second_at_5fps": 0.79,
+  "model_file_mb": 10.6
+}

@@ -1,0 +1,165 @@
+{
+  "split": "test",
+  "ocr_engine": "RapidOCR (PP-OCR, ONNX, CPU)",
+  "ms_per_plate": 362.3,
+  "levels": {
+    "0": "close & clear",
+    "1": "medium distance",
+    "2": "far, dark, noisy",
+    "3": "very far, low quality"
+  },
+  "results": {
+    "all": {
+      "plates": 400,
+      "raw_ocr_exact_%": 31.2,
+      "with_cleanup_exact_%": 87.5,
+      "raw_ocr_CER_%": 54.3,
+      "with_cleanup_CER_%": 8.8,
+      "accepted_%": 90.5,
+      "precision_of_accepted_%": 96.7
+    },
+    "level 0": {
+      "plates": 100,
+      "raw_ocr_exact_%": 1.0,
+      "with_cleanup_exact_%": 98.0,
+      "raw_ocr_CER_%": 87.3,
+      "with_cleanup_CER_%": 0.3,
+      "accepted_%": 100.0,
+      "precision_of_accepted_%": 98.0
+    },
+    "punjab_car": {
+      "plates": 80,
+      "raw_ocr_exact_%": 43.8,
+      "with_cleanup_exact_%": 95.0,
+      "raw_ocr_CER_%": 46.1,
+      "with_cleanup_CER_%": 1.6,
+      "accepted_%": 96.2,
+      "precision_of_accepted_%": 98.7
+    },
+    "punjab_bike": {
+      "plates": 80,
+      "raw_ocr_exact_%": 28.7,
+      "with_cleanup_exact_%": 78.8,
+      "raw_ocr_CER_%": 58.6,
+      "with_cleanup_CER_%": 15.2,
+      "accepted_%": 83.8,
+      "precision_of_accepted_%": 94.0
+    },
+    "punjab_year": {
+      "plates": 80,
+      "raw_ocr_exact_%": 0.0,
+      "with_cleanup_exact_%": 85.0,
+      "raw_ocr_CER_%": 82.0,
+      "with_cleanup_CER_%": 10.9,
+      "accepted_%": 88.8,
+      "precision_of_accepted_%": 95.8
+    },
+    "ict": {
+      "plates": 80,
+      "raw_ocr_exact_%": 46.2,
+      "with_cleanup_exact_%": 96.2,
+      "raw_ocr_CER_%": 32.5,
+      "with_cleanup_CER_%": 1.7,
+      "accepted_%": 98.8,
+      "precision_of_accepted_%": 97.5
+    },
+    "sindh": {
+      "plates": 80,
+      "raw_ocr_exact_%": 37.5,
+      "with_cleanup_exact_%": 82.5,
+      "raw_ocr_CER_%": 52.4,
+      "with_cleanup_CER_%": 14.5,
+      "accepted_%": 85.0,
+      "precision_of_accepted_%": 97.1
+    },
+    "level 1": {
+      "plates": 100,
+      "raw_ocr_exact_%": 0.0,
+      "with_cleanup_exact_%": 94.0,
+      "raw_ocr_CER_%": 88.7,
+      "with_cleanup_CER_%": 4.6,
+      "accepted_%": 96.0,
+      "precision_of_accepted_%": 97.9
+    },
+    "level 2": {
+      "plates": 100,
+      "raw_ocr_exact_%": 74.0,
+      "with_cleanup_exact_%": 94.0,
+      "raw_ocr_CER_%": 10.2,
+      "with_cleanup_CER_%": 3.6,
+      "accepted_%": 96.0,
+      "precision_of_accepted_%": 97.9
+    },
+    "level 3": {
+      "plates": 100,
+      "raw_ocr_exact_%": 50.0,
+      "with_cleanup_exact_%": 64.0,
+      "raw_ocr_CER_%": 31.1,
+      "with_cleanup_CER_%": 26.8,
+      "accepted_%": 70.0,
+      "precision_of_accepted_%": 91.4
+    }
+  },
+  "examples_fixed_by_cleanup": [
+    {
+      "truth": "LEF-6469",
+      "raw_ocr": "PUNJAB LEF 6469",
+      "after_cleanup": "LEF-6469"
+    },
+    {
+      "truth": "LEB-8314",
+      "raw_ocr": "PUNJAB LEB 8314",
+      "after_cleanup": "LEB-8314"
+    },
+    {
+      "truth": "LEC-9029",
+      "raw_ocr": "PUNJAB LEC 21 9 9029",
+      "after_cleanup": "LEC-9029"
+    },
+    {
+      "truth": "VB-591",
+      "raw_ocr": "ICT VB5 591",
+      "after_cleanup": "VB-591"
+    },
+    {
+      "truth": "BNG-430",
+      "raw_ocr": "SINDH BNG-430",
+      "after_cleanup": "BNG-430"
+    },
+    {
+      "truth": "LEZ-1689",
+      "raw_ocr": "PUNJAB LEZ 1689",
+      "after_cleanup": "LEZ-1689"
+    },
+    {
+      "truth": "LEC-9247",
+      "raw_ocr": "PUNJAB LEC 9247",
+      "after_cleanup": "LEC-9247"
+    },
+    {
+      "truth": "BWA-9594",
+      "raw_ocr": "PUNJAB BWA 21 9594",
+      "after_cleanup": "BWA-9594"
+    },
+    {
+      "truth": "KT-507",
+      "raw_ocr": "ICT KT 507",
+      "after_cleanup": "KT-507"
+    },
+    {
+      "truth": "KHI-169",
+      "raw_ocr": "SINDH KHI-169",
+      "after_cleanup": "KHI-169"
+    },
+    {
+      "truth": "LEC-9144",
+      "raw_ocr": "PUNJAB LEC 9144",
+      "after_cleanup": "LEC-9144"
+    },
+    {
+      "truth": "CHK-7475",
+      "raw_ocr": "PUNJAB CHK 7475",
+      "after_cleanup": "CHK-7475"
+    }
+  ]
+}

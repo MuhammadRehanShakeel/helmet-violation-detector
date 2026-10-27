@@ -1,0 +1,52 @@
+# ===== Secrets (NEVER push) =====
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+kaggle.json
+DEMO_ACCOUNT.txt
+
+# ===== Python =====
+venv/
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# ===== AI models =====
+# roadguard_yolo11n.onnx (trained, 10.6 MB) and yolo11n_coco.onnx (backup, 10.7 MB) ARE committed,
+# so the project works right after cloning. Other model files are not.
+backend/models/*.pt
+*.pt
+
+# ===== Runtime data: uploads, evidence photos, challans, logs =====
+backend/data/
+backend/logs/
+logs/
+*.log
+setup_log.txt
+test_results.txt
+eval_log.txt
+
+# ===== Big media =====
+*.mp4
+*.mov
+*.mkv
+*.avi
+
+# ===== Node / Vite / Android =====
+node_modules/
+dist/
+.vite/
+frontend/android/app/build/
+frontend/android/.gradle/
+frontend/android/local.properties
+
+# ===== Editors / OS =====
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+screenshot_log.txt
+frontend/public/demo/

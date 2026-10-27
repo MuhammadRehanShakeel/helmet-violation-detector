@@ -1,0 +1,11 @@
+{
+  "name": "RoadGuard - Helmet & Plate Violations",
+  "short_name": "RoadGuard",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0d141c",
+  "theme_color": "#0d141c",
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

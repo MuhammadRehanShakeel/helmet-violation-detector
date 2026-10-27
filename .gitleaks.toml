@@ -1,0 +1,11 @@
+# gitleaks: default rules + allow-list for files that only contain fake test values
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Test fixtures, example settings and evaluation data contain no real secrets"
+paths = [
+  '''backend/tests/''',
+  '''\.env\.example$''',
+  '''evaluation/data/''',
+]

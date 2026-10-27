@@ -1,0 +1,9 @@
+{
+  "appId": "com.roadguard.app",
+  "appName": "RoadGuard",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "http",
+    "cleartext": true
+  }
+}

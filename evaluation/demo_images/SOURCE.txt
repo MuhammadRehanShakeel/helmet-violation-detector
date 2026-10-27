@@ -1,0 +1,1 @@
+Images from 'Helmet Detection and License Plate Recognition' by FPT University, Roboflow Universe, licensed CC BY 4.0: https://universe.roboflow.com/fpt-university-9oa0t/helmet-detection-and-license-plate-recognition-zfenu
