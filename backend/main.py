@@ -38,7 +38,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=config.CORS_ORIGINS,          # only our own frontend, never "*"
     allow_credentials=False,
-    allow_methods=["GET", "POST", "PUT"],
+    allow_methods=["GET", "POST", "PUT"],          # (no DELETE route exists)
     allow_headers=["Authorization", "Content-Type"],
 )
 
@@ -65,10 +65,11 @@ async def unexpected_error(request: Request, exc: Exception):
     return JSONResponse({"detail": "Something went wrong on the server. Please try again."}, status_code=500)
 
 
-from app.routes import (auth_routes, camera_routes, job_routes, live_routes, stats_routes,  # noqa: E402
-                        violation_routes)
+from app.routes import (auth_routes, camera_routes, citizen_routes, event_routes, job_routes,  # noqa: E402
+                        live_routes, report_routes, stats_routes, violation_routes)
 
-for module in (auth_routes, camera_routes, job_routes, violation_routes, stats_routes, live_routes):
+for module in (auth_routes, camera_routes, job_routes, violation_routes, stats_routes, live_routes,
+               event_routes, citizen_routes, report_routes):
     app.include_router(module.router)
 
 
@@ -87,6 +88,14 @@ def on_startup():
     else:
         log.warning("[!] AI model missing: %s (see backend/models/README.md)", config.MODEL_PATH)
     start_worker()
+    from app.services.streams import stream_manager
+    stream_manager.start_enabled()                      # resume CCTV cameras that were being watched
+
+
+@app.on_event("shutdown")
+def on_shutdown():
+    from app.services.streams import stream_manager
+    stream_manager.stop_all()
 
 
 @app.get("/")

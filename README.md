@@ -2,7 +2,7 @@
 
 **AI that spots motorcyclists without helmets and triple riding in traffic photos, videos or a live phone camera, reads their Pakistani number plates, and turns each violation into a reviewed PDF e-challan. It runs fully offline on a normal laptop CPU.**
 
-![Python](https://img.shields.io/badge/Python-3.11-3776AB) ![YOLO11](https://img.shields.io/badge/YOLO11n-ONNX-111) ![FastAPI](https://img.shields.io/badge/FastAPI-0.104-009688) ![React](https://img.shields.io/badge/React-18-61DAFB) ![SQL Server](https://img.shields.io/badge/MS%20SQL%20Server-CC2927) ![Tests](https://img.shields.io/badge/tests-85%20passing-brightgreen) ![License](https://img.shields.io/badge/license-MIT-blue)
+![Python](https://img.shields.io/badge/Python-3.11-3776AB) ![YOLO11](https://img.shields.io/badge/YOLO11n-ONNX-111) ![FastAPI](https://img.shields.io/badge/FastAPI-0.104-009688) ![React](https://img.shields.io/badge/React-18-61DAFB) ![SQL Server](https://img.shields.io/badge/MS%20SQL%20Server-CC2927) ![Tests](https://img.shields.io/badge/tests-103%20passing-brightgreen) ![License](https://img.shields.io/badge/license-MIT-blue)
 
 > In Pakistan, motorcycles are most of the traffic and riding without a helmet is the most common
 > violation. Islamabad Traffic Police alone issued 56,000+ helmet tickets in 2024, all by hand.
@@ -20,6 +20,10 @@
 | ![Plate search](docs/screenshots/08_plate_search_repeat_offender.png) | ![Analyse](docs/screenshots/03_analyse_media.png) |
 | **False alarm rejected by an officer** (bystanders blurred) | **Audit log** |
 | ![Rejected](docs/screenshots/07_violation_rejected_false_alarm.png) | ![Audit](docs/screenshots/11_audit_log.png) |
+| **CCTV wall** (cameras watched 24/7) | **Live notifications** |
+| ![CCTV wall](docs/screenshots/17_cctv_wall.png) | ![Notifications](docs/screenshots/18_live_notifications.png) |
+| **Citizen portal** (see the photo, pay or appeal) | **Hotspot map** |
+| ![Citizen portal](docs/screenshots/24_citizen_portal.png) | ![Hotspot map](docs/screenshots/20_hotspot_map.png) |
 
 <p align="center">
   <img src="docs/screenshots/13_phone_dashboard.png" width="230" alt="Phone dashboard">
@@ -46,6 +50,12 @@ Number plates in the screenshots (`DEMO-7` ...) were typed by the demo officer; 
 | 🔁 **Repeat offenders** | full history of any plate; dashboard top list |
 | 📊 **Dashboard** | violations per day, busiest hours, per camera, officer-agreement rate |
 | 🔐 **Roles & audit log** | admin / officer / viewer; every login, approval and challan is logged |
+| 📹 **CCTV / IP cameras** | watches RTSP CCTV or a phone running "IP Webcam" 24/7 (2 frames/s), reconnects by itself, live wall of all cameras |
+| 🔔 **Live notifications** | new violations, appeals and payments pop up instantly (Server-Sent Events), pages refresh themselves |
+| 👤 **Accounts** | "request access" form → admin approves → temporary password that must be changed; profile, log out everywhere |
+| 🧑‍⚖️ **Citizen portal** | plate + challan number → see the photo, pay (demo) or appeal; officers decide appeals |
+| 🗺️ **Hotspot map & reports** | cameras on an OpenStreetMap sized by violations; one-click PDF summary and Excel (CSV) export |
+| 🎯 **Local fine-tuning kit** | turns your own road videos into AI-pre-labelled training data for the Colab notebook |
 
 ## 📏 Results
 
@@ -56,7 +66,7 @@ Number plates in the screenshots (`DEMO-7` ...) were typed by the demo officer; 
 | Different dataset (Kaggle, never trained on) | 8.7% mAP50: it boxes the whole rider, we box the head ([why](evaluation/RESULTS.md)) |
 | Plate reading, 400 held-out synthetic plates | **87.5% exact** (raw OCR: 31.2%), **96.7% precision** on accepted plates |
 | Speed, 2-vCPU cloud VM, no GPU | **~70-90 ms per frame**, about real time for video at 5 analysed fps |
-| Automated tests | **85** (rules, tracking, plates, API security, jobs, live camera), CI on every push |
+| Automated tests | **103** (rules, tracking, plates, API security, jobs, live camera, CCTV, citizen portal, reports), CI on every push |
 
 Full tables, per class and per difficulty: **[evaluation/RESULTS.md](evaluation/RESULTS.md)**
 
@@ -87,7 +97,7 @@ Plain-language explanation of every step: **[docs/HOW_IT_WORKS.md](docs/HOW_IT_W
 | Backend | FastAPI · Microsoft SQL Server (pyodbc) · bcrypt · JWT · ReportLab (PDF + QR) |
 | Frontend | React 18 · Vite · Material UI · Redux Toolkit · Recharts |
 | Mobile | Capacitor (Android app) · PWA |
-| Quality | pytest (85 tests) · GitHub Actions · gitleaks · pip-audit |
+| Quality | pytest (103 tests) · GitHub Actions · gitleaks · pip-audit |
 
 ## 🔐 Security
 
@@ -108,10 +118,14 @@ Needs: Python 3.11, Node 20, SQL Server (Express is fine) + ODBC Driver 17.
 
 | Script | Does |
 |---|---|
-| `scripts\windows\run_tests.bat` | all 85 tests |
+| `scripts\windows\run_tests.bat` | all 103 tests |
 | `scripts\windows\run_evaluation.bat` | plate accuracy + speed on your laptop |
 | `scripts\windows\capture_screenshots.bat` | screenshots of the running app |
 | `scripts\windows\update_github.bat` | push your changes to GitHub |
+
+**Phone as live camera (no app install):** double-click `start_phone_camera.bat`, open the shown
+`https://<laptop-IP>:5174` on your phone (same Wi-Fi), accept the certificate warning, log in → **Live camera**.
+Phones only allow the camera on HTTPS pages, so this mode serves the app over HTTPS.
 
 **Android app:** in `frontend/.env` set `VITE_API_URL=http://<your-PC-Wi-Fi-IP>:5001`, set
 `API_HOST=0.0.0.0` in `backend/.env`, then `npm run android:sync` and `npm run android:open` (Android Studio).
@@ -124,7 +138,7 @@ backend/
   app/routes/     auth · cameras · jobs · violations & challans · stats · live
   scripts/        schema.sql · init_db.py · setup_env.py
   models/         roadguard_yolo11n.onnx (trained) · yolo11n_coco.onnx (backup)
-  tests/          85 tests (no SQL Server or model needed)
+  tests/          103 tests (no SQL Server or model needed)
 frontend/         React app + Android (Capacitor)
 training/         Colab notebook (train → test → cross-dataset test → ONNX)
 evaluation/       plate OCR eval, speed benchmark, results
@@ -138,6 +152,9 @@ docs/             HOW_IT_WORKS · WHERE_TO_CHANGE · INTERVIEW_NOTES
   hundred local Rawalpindi/Islamabad images is the next step.
 * Plate accuracy is measured on synthetic plates; real, dirty plates will score lower. That is why an
   officer confirms every plate.
+* Payments in the citizen portal are a demo (no money moves); a real system would use 1Link / JazzCash / Easypaisa.
+  There is no link to the Excise vehicle-owner database, so challans are not sent to owners by SMS.
+* A CPU checks about 2 frames per second per CCTV camera, max 3 cameras; a city needs GPU servers.
 * This is a portfolio project. The e-challan says so and is not an official document.
 
 ## 📚 Datasets & credits

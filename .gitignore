@@ -50,3 +50,5 @@ frontend/android/local.properties
 Thumbs.db
 screenshot_log.txt
 frontend/public/demo/
+training/local_videos/
+training/local_dataset/

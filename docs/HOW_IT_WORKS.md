@@ -163,3 +163,33 @@ pending ──officer approves──► approved ──officer issues──► e
 | First-time `pip install` / `npm install` | Yes (once) |
 | Training the model | Yes: Google Colab + Roboflow/Kaggle downloads (once) |
 | Android app | Same Wi-Fi as the PC that runs the backend |
+
+## 11. Version 2: running it like a real control room
+
+**CCTV / IP cameras (`services/streams.py`).** Each watched camera gets its own background thread.
+It opens the stream with OpenCV (RTSP over TCP, with timeouts), takes 2 frames per second, and feeds
+them to the same `VideoSession` used for uploaded videos, so tracking, plate voting and the
+"at least 2 frames" rule are identical. If the stream drops, it waits 2 s, then 4, 8 ... up to 30 s
+and tries again. The newest frame (with boxes) is kept in memory as a JPEG for the live wall.
+Stream passwords are never sent back to the browser (`rtsp://***@...`).
+`demo:demo_traffic.mp4` loops a video file so the feature can be shown without a real camera.
+
+**Live notifications (`services/events.py`, `routes/event_routes.py`).** Server-Sent Events: the
+browser keeps one HTTP request open and the server writes a line whenever something happens.
+Simpler than WebSockets because data only goes one way. The detector runs in worker threads, so
+events are handed to the web server's loop with `call_soon_threadsafe`. Viewers get masked plates.
+The frontend reads the stream with `fetch` (not `EventSource`) so the login token stays in a header.
+
+**Accounts.** Nobody signs up by themselves. A person fills "request access"; an admin approves and
+gets a one-time temporary password; the first login is forced to the Profile page to change it.
+Every token carries a `tv` (token version). Changing the password or "log out everywhere" adds 1, so
+all old tokens stop working at once.
+
+**Citizen portal (`routes/citizen_routes.py`).** A citizen types the plate *and* the challan number
+(either alone could be guessed). They get a 30-minute token for that one challan: see the photo,
+pay (demo) or appeal. Appeals go to officers; "accepted" cancels the challan.
+
+**Map and reports (`routes/report_routes.py`).** Cameras with GPS are drawn on OpenStreetMap,
+bigger and redder where there are more violations. Officers can download a one-page PDF summary
+or all rows as CSV for Excel (cells starting with `=` `+` `-` `@` are escaped, so a fake plate
+cannot run an Excel formula).

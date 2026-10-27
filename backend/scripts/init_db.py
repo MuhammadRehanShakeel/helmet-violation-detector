@@ -1,5 +1,5 @@
 """
-init_db.py - Creates the RoadGuard database, its tables and your first admin account.
+init_db.py - Creates (or upgrades) the RoadGuard database, its tables and your first admin account.
 
 Run once from the backend folder:
     venv\\Scripts\\python.exe scripts\\init_db.py
@@ -39,13 +39,18 @@ def main():
 
     conn = connect(config.DB_NAME)
     cur = conn.cursor()
-    with open(os.path.join(os.path.dirname(__file__), "schema.sql"), encoding="utf-8") as f:
-        sql = f.read()
-    # run each "IF ... CREATE ..." block separately
-    blocks = [b.strip() for b in sql.split("\n\n") if b.strip() and not b.strip().startswith("--")]
-    for block in blocks:
-        cur.execute(block)
-    print(f"[OK] {len(blocks)} schema steps done")
+    for name in ("schema.sql", "migrations.sql"):          # tables first, then the v2 upgrades
+        with open(os.path.join(os.path.dirname(__file__), name), encoding="utf-8") as f:
+            sql = f.read()
+        # run each "IF ... CREATE / ALTER ..." block separately (blocks are separated by a blank line)
+        blocks = []
+        for block in sql.split("\n\n"):
+            code = "\n".join(line for line in block.splitlines() if not line.strip().startswith("--")).strip()
+            if code:
+                blocks.append(code)
+        for block in blocks:
+            cur.execute(block)
+        print(f"[OK] {name}: {len(blocks)} steps done")
 
     cur.execute("SELECT COUNT(*) FROM Cameras")
     if cur.fetchone()[0] == 0:

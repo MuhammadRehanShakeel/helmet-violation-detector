@@ -19,7 +19,12 @@ import UsersIcon from '@mui/icons-material/GroupOutlined';
 import AuditIcon from '@mui/icons-material/HistoryOutlined';
 import MenuIcon from '@mui/icons-material/Menu';
 import LogoutIcon from '@mui/icons-material/LogoutOutlined';
+import CctvIcon from '@mui/icons-material/VideoCameraBackOutlined';
+import MapIcon from '@mui/icons-material/MapOutlined';
+import GavelIcon from '@mui/icons-material/GavelOutlined';
+import NotificationBell from './NotificationBell';
 import { logout } from '../store/authSlice';
+import { stopEvents } from '../services/events';
 import { colors } from '../theme';
 import Logo from './Logo';
 
@@ -27,9 +32,12 @@ const WIDTH = 236;
 const MENU = [
   { to: '/', label: 'Dashboard', icon: <DashboardIcon />, roles: ['admin', 'officer', 'viewer'] },
   { to: '/analyze', label: 'Analyse media', icon: <UploadIcon />, roles: ['admin', 'officer'] },
-  { to: '/live', label: 'Live camera', icon: <LiveIcon />, roles: ['admin', 'officer'] },
+  { to: '/cctv', label: 'CCTV wall', icon: <CctvIcon />, roles: ['admin', 'officer'] },
+  { to: '/live', label: 'Phone camera', icon: <LiveIcon />, roles: ['admin', 'officer'] },
   { to: '/violations', label: 'Review queue', icon: <ReviewIcon />, roles: ['admin', 'officer', 'viewer'] },
+  { to: '/appeals', label: 'Appeals', icon: <GavelIcon />, roles: ['admin', 'officer'] },
   { to: '/plates', label: 'Plate search', icon: <PlateIcon />, roles: ['admin', 'officer'] },
+  { to: '/map', label: 'Hotspot map', icon: <MapIcon />, roles: ['admin', 'officer', 'viewer'] },
   { to: '/cameras', label: 'Cameras', icon: <CameraIcon />, roles: ['admin'] },
   { to: '/users', label: 'Users', icon: <UsersIcon />, roles: ['admin'] },
   { to: '/audit', label: 'Audit log', icon: <AuditIcon />, roles: ['admin'] },
@@ -44,8 +52,9 @@ export default function Layout() {
 
   const menu = (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', bgcolor: colors.panel }}>
-      <Box sx={{ px: 2.5, py: 2.2 }}>
+      <Box sx={{ px: 2.5, py: 2.2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <Logo />
+        {desktop && <NotificationBell />}
       </Box>
       <List sx={{ px: 1.2, flex: 1 }}>
         {MENU.filter((m) => m.roles.includes(user.role)).map((m) => (
@@ -66,15 +75,16 @@ export default function Layout() {
         ))}
       </List>
       <Box sx={{ p: 2, borderTop: `1px solid ${colors.line}`, display: 'flex', alignItems: 'center', gap: 1.2 }}>
-        <Avatar sx={{ bgcolor: colors.panelHigh, color: colors.amber, width: 36, height: 36, fontWeight: 700 }}>
+        <Avatar onClick={() => { setOpen(false); navigate('/profile'); }}
+          sx={{ bgcolor: colors.panelHigh, color: colors.amber, width: 36, height: 36, fontWeight: 700, cursor: 'pointer' }}>
           {user.full_name?.[0]?.toUpperCase()}
         </Avatar>
-        <Box sx={{ flex: 1, minWidth: 0 }}>
+        <Box sx={{ flex: 1, minWidth: 0, cursor: 'pointer' }} onClick={() => { setOpen(false); navigate('/profile'); }}>
           <Typography noWrap fontSize={14} fontWeight={600}>{user.full_name}</Typography>
           <Chip label={user.role} size="small" sx={{ height: 18, fontSize: 11, textTransform: 'capitalize' }} />
         </Box>
         <Tooltip title="Log out">
-          <IconButton onClick={() => { dispatch(logout()); navigate('/login'); }} size="small">
+          <IconButton onClick={() => { stopEvents(); dispatch(logout()); navigate('/login'); }} size="small">
             <LogoutIcon fontSize="small" />
           </IconButton>
         </Tooltip>
@@ -94,6 +104,7 @@ export default function Layout() {
             <Toolbar>
               <IconButton edge="start" onClick={() => setOpen(true)} sx={{ mr: 1 }}><MenuIcon /></IconButton>
               <Logo small />
+              <Box sx={{ ml: 'auto' }}><NotificationBell /></Box>
             </Toolbar>
           </AppBar>
           <Drawer open={open} onClose={() => setOpen(false)} sx={{ '& .MuiDrawer-paper': { width: WIDTH } }}>

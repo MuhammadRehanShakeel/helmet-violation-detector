@@ -4,7 +4,8 @@
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Navigate } from 'react-router-dom';
-import { Alert, Box, Button, Paper, TextField, Typography } from '@mui/material';
+import { Link as RouterLink } from 'react-router-dom';
+import { Alert, Box, Button, Divider, Link, Paper, Stack, TextField, Typography } from '@mui/material';
 import { clearError, login } from '../store/authSlice';
 import Logo from '../components/Logo';
 import { colors } from '../theme';
@@ -46,6 +47,11 @@ export default function Login() {
         <Typography color="text.secondary" fontSize={12} sx={{ mt: 2.5, textAlign: 'center' }}>
           5 wrong passwords lock the account for 15 minutes.
         </Typography>
+        <Divider sx={{ my: 2.5 }} />
+        <Stack direction="row" justifyContent="space-between" fontSize={14}>
+          <Link component={RouterLink} to="/request-access">Need an account? Ask for access</Link>
+          <Link component={RouterLink} to="/citizen">Got a challan? Check it here</Link>
+        </Stack>
       </Paper>
     </Box>
   );

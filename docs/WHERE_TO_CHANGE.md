@@ -26,6 +26,16 @@
 | Add a menu item | `MENU` | `frontend/src/components/Layout.jsx` |
 | Change frames per second of the live camera | `FRAME_EVERY_MS` | `frontend/src/pages/LiveCamera.jsx` |
 | Change ports | `API_PORT` in `.env` + `vite.config.js` | both |
+| Frames per second / max CCTV cameras | `STREAM_FPS`, `MAX_STREAMS` | `backend/app/config.py` |
+| Add a CCTV camera | Cameras page → stream address (`rtsp://...`, `http://<phone>:8080/video` or `demo:file.mp4`) → Watch | the app |
+| Change what a notification says | `received` reducer / `NotificationBell` | `frontend/src/store/notificationsSlice.js`, `components/NotificationBell.jsx` |
+| Who gets which live event | `event_bus.publish(..., roles=...)` | wherever it is called (`storage.py`, `citizen_routes.py`, `auth_routes.py`) |
+| Citizen lookup limits / token time | `enforce_rate_limit(...)`, `TOKEN_MINUTES` | `backend/app/routes/citizen_routes.py` |
+| Real payment gateway | replace the body of `pay()` | `backend/app/routes/citizen_routes.py` |
+| Map start position / tiles | `center` of `MapContainer`, `TileLayer url` | `frontend/src/pages/HotspotMap.jsx` |
+| PDF report layout | `summary_pdf()` | `backend/app/routes/report_routes.py` |
+| Database changes | add an idempotent block to `migrations.sql`, run `init_db.py` | `backend/scripts/` |
+| Train on your own road videos | `prepare_local_data.bat`, then `LOCAL_PROJECT` in the notebook | `training/` |
 | Retrain with more data | add datasets in the notebook (step 3/4), run all | `training/train_roadguard_colab.ipynb` |
 
 After any backend change, run `scripts\windows\run_tests.bat`. All tests must pass.

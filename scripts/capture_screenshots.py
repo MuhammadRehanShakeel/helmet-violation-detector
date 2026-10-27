@@ -125,6 +125,64 @@ def main():
         shot(page, "11_audit_log.png")
         page.goto(f"{APP}/cameras")
         shot(page, "12_cameras.png")
+
+        # ---------- version 2 pages ----------
+        api = """async ([method, path, body]) => {
+            const r = await fetch('/api' + path, {method, headers: {'Content-Type': 'application/json',
+                Authorization: 'Bearer ' + sessionStorage.getItem('rg_token')}, body: body ? JSON.stringify(body) : undefined});
+            return r.ok ? r.json() : null;
+        }"""
+        cams = page.evaluate(api, ["GET", "/cameras", None]) or []
+        cam = next((c for c in cams if c["name"] == "Faizabad Interchange"), cams[0] if cams else None)
+        old = {"stream_url": cam.get("stream_url"), "stream_enabled": bool(cam.get("stream_enabled"))} if cam else None
+        if cam:
+            # play the demo video as a CCTV camera for ~40 s, then put the camera back as it was
+            page.evaluate(api, ["PUT", f"/cameras/{cam['camera_id']}/stream",
+                                {"stream_url": old["stream_url"] or "demo:demo_traffic.mp4", "stream_enabled": True}])
+            page.goto(f"{APP}/cctv")
+            shot(page, "17_cctv_wall.png", wait=40000)
+            try:
+                page.get_by_role("button", name="Notifications").click()
+                shot(page, "18_live_notifications.png", wait=1500)
+                page.keyboard.press("Escape")
+            except Exception as e:
+                print("skipped 18_live_notifications.png -", e)
+            page.evaluate(api, ["PUT", f"/cameras/{cam['camera_id']}/stream",
+                                {"stream_url": old["stream_url"] or "demo:demo_traffic.mp4",
+                                 "stream_enabled": old["stream_enabled"]}])
+            try:
+                page.goto(f"{APP}/cameras")
+                page.wait_for_timeout(2000)
+                page.get_by_role("cell", name=cam["name"]).first.click()
+                shot(page, "19_camera_stream_settings.png", wait=1500)
+                page.keyboard.press("Escape")
+            except Exception as e:
+                print("skipped 19_camera_stream_settings.png -", e)
+
+        page.goto(f"{APP}/map")
+        shot(page, "20_hotspot_map.png", wait=5000)
+        page.goto(f"{APP}/appeals")
+        shot(page, "21_appeals_desk.png")
+        page.goto(f"{APP}/profile")
+        shot(page, "22_profile.png")
+
+        found = page.evaluate("""async () => {
+            const h = {Authorization: 'Bearer ' + sessionStorage.getItem('rg_token')};
+            const r = await (await fetch('/api/violations?status=approved&page_size=100', {headers: h})).json();
+            const v = r.items.find(x => x.challan_no && x.challan_status === 'unpaid') || r.items.find(x => x.challan_no);
+            return v ? {plate: v.plate_text, challan: v.challan_no} : null;
+        }""")
+        citizen = browser.new_page(viewport={"width": 1440, "height": 900})      # not logged in, like a citizen
+        citizen.goto(f"{APP}/request-access")
+        shot(citizen, "23_request_access.png", wait=1500)
+        citizen.goto(f"{APP}/citizen")
+        if found:
+            citizen.wait_for_timeout(1500)
+            citizen.get_by_label("Number plate").fill(found["plate"])
+            citizen.get_by_label("Challan number").fill(found["challan"])
+            citizen.get_by_role("button", name="Find").click()
+        shot(citizen, "24_citizen_portal.png", full_page=True, wait=3500)
+        citizen.close()
         page.close()
 
         # ---------- phone (same as the Android app) ----------

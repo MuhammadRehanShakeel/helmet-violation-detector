@@ -30,7 +30,8 @@ export default function Analyze() {
   const input = useRef();
 
   const busy = jobs.some((j) => j.status === 'queued' || j.status === 'running');
-  useEffect(() => { dispatch(fetchJobs()); }, [dispatch]);
+  const tick = useSelector((s) => s.notifications.tick);
+  useEffect(() => { dispatch(fetchJobs()); }, [dispatch, tick]);
   useEffect(() => {
     if (!busy) return undefined;
     const t = setInterval(() => dispatch(fetchJobs()), 2000);

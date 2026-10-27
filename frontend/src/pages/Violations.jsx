@@ -21,8 +21,9 @@ export default function Violations() {
   const { items, total, page, loading, error, filters } = useSelector((s) => s.violations);
   const role = useSelector((s) => s.auth.user.role);
   const [openId, setOpenId] = useState(null);
+  const tick = useSelector((s) => s.notifications.tick);       // live: new detections appear by themselves
 
-  useEffect(() => { dispatch(fetchViolations()); }, [dispatch, filters, page]);
+  useEffect(() => { dispatch(fetchViolations()); }, [dispatch, filters, page, tick]);
 
   return (
     <>

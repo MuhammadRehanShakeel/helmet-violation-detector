@@ -160,6 +160,57 @@ except Exception as e:
 """)
 
 md("""
+## (Optional) Your own local traffic data
+Leave `LOCAL_PROJECT` empty for the normal training.
+
+To make the model better on Pakistani roads: run `training/prepare_local_data.py` on your own videos,
+upload the folder to a **new Roboflow project**, fix the boxes, click **Generate** (version 1), then type
+the project here as `"workspace/project/version"` (shown in Roboflow's URL), e.g. `"rehan-ws/rawalpindi-bikes/1"`.
+
+Your images are used 3 times per epoch (they are few, but they matter most), and a separate local test
+split shows the improvement. To compare with the old model, upload your old `roadguard_yolo11n.onnx`
+to the Colab file panel (left, folder icon) before Run all.
+""")
+
+code("""
+# 4b. (Optional) add your own labelled local images
+LOCAL_PROJECT = ""          # e.g. "your-workspace/your-project/1"
+
+local = None
+train_dirs, val_dirs = [str(root / "train" / "images")], [str(root / "valid" / "images")]
+if LOCAL_PROJECT:
+    ws, proj, ver = LOCAL_PROJECT.strip("/").split("/")
+    local_ds = rf.workspace(ws).project(proj).version(int(ver)).download("yolov11", location="/content/local")
+    local = Path(local_ds.location)
+    linfo = yaml.safe_load(open(local / "data.yaml"))
+    lnames = linfo["names"] if isinstance(linfo["names"], list) else [linfo["names"][k] for k in sorted(linfo["names"])]
+    local_counts = remap_dataset(str(local), lnames)
+    # make sure there is a local test split (15% of train) to measure the improvement honestly
+    if not (local / "test" / "images").exists() or not any((local / "test" / "images").iterdir()):
+        imgs = sorted((local / "train" / "images").glob("*"))
+        random.Random(0).shuffle(imgs)
+        for d in ["images", "labels"]:
+            (local / "test" / d).mkdir(parents=True, exist_ok=True)
+        for img in imgs[: max(1, int(len(imgs) * 0.15))]:
+            shutil.move(str(img), local / "test" / "images" / img.name)
+            lab = local / "train" / "labels" / (img.stem + ".txt")
+            if lab.exists():
+                shutil.move(str(lab), local / "test" / "labels" / lab.name)
+    train_dirs += [str(local / "train" / "images")] * 3          # oversample the local images
+    if (local / "valid" / "images").exists():
+        val_dirs.append(str(local / "valid" / "images"))
+    yaml.safe_dump({"path": "/content", "train": train_dirs, "val": val_dirs,
+                    "names": {i: n for i, n in enumerate(TARGET)}}, open("/content/roadguard_mixed.yaml", "w"))
+    yaml.safe_dump({"path": str(local), "train": "train/images", "val": "test/images",
+                    "names": {i: n for i, n in enumerate(TARGET)}}, open("/content/local_test.yaml", "w"))
+    data_yaml_train = "/content/roadguard_mixed.yaml"
+    print("Local images:", {s: len(list((local / s / "images").glob("*"))) for s in ["train", "valid", "test"]
+                            if (local / s / "images").exists()}, "boxes:", local_counts)
+else:
+    data_yaml_train = data_yaml
+""")
+
+md("""
 ## Train YOLO11n
 * `yolo11n.pt` = pretrained on COCO (already knows people and motorbikes), we fine-tune it
 * 60 epochs with early stopping (stops if it does not improve for 15 epochs)
@@ -170,7 +221,7 @@ code("""
 # 6. Train (about 45-70 minutes on a T4)
 from ultralytics import YOLO
 model = YOLO("yolo11n.pt")
-model.train(data=data_yaml, epochs=60, patience=15, imgsz=640, batch=32, seed=0, deterministic=True,
+model.train(data=data_yaml_train, epochs=60, patience=15, imgsz=640, batch=32, seed=0, deterministic=True,
             cos_lr=True, close_mosaic=10, project="/content/runs", name="roadguard", exist_ok=True,
             plots=True, workers=4)
 """)
@@ -196,6 +247,20 @@ report = {"model": "YOLO11n", "image_size": 640, "dataset": "FPT University - He
           "images_per_split": split_sizes, "boxes_per_class": box_counts,
           "test": metrics_of(test_result, TARGET)}
 print(json.dumps(report["test"], indent=2))
+
+if local is not None:                 # the number that matters for YOUR roads
+    report["local_project"] = LOCAL_PROJECT
+    report["local_test_new_model"] = metrics_of(
+        best.val(data="/content/local_test.yaml", split="val", imgsz=640, batch=16, plots=True,
+                 project="/content/runs", name="local_test", exist_ok=True), TARGET)
+    if Path("/content/roadguard_yolo11n.onnx").exists():
+        report["local_test_old_model"] = metrics_of(
+            YOLO("/content/roadguard_yolo11n.onnx", task="detect").val(
+                data="/content/local_test.yaml", split="val", imgsz=640, batch=1, plots=False,
+                project="/content/runs", name="local_test_old", exist_ok=True), TARGET)
+    print("Local test, new model:", json.dumps(report["local_test_new_model"], indent=2))
+    if "local_test_old_model" in report:
+        print("Local test, OLD model:", json.dumps(report["local_test_old_model"], indent=2))
 """)
 
 md("""
@@ -236,7 +301,7 @@ code("""
 # 9. Export to ONNX for the laptop (CPU) and check the speed on Colab's CPU
 import onnxruntime as ort, numpy as np, time
 onnx_path = best.export(format="onnx", imgsz=640, simplify=True, opset=12)
-final = "/content/roadguard_yolo11n.onnx"
+final = "/content/roadguard_yolo11n_new.onnx" if Path("/content/roadguard_yolo11n.onnx").exists() else "/content/roadguard_yolo11n.onnx"
 shutil.copy(onnx_path, final)
 session = ort.InferenceSession(final, providers=["CPUExecutionProvider"])
 x = np.random.rand(1, 3, 640, 640).astype(np.float32)
@@ -275,10 +340,10 @@ code("""
 # 11. Save everything into one zip and download it
 out = Path("/content/roadguard_results"); out.mkdir(exist_ok=True)
 json.dump(report, open(out / "training_report.json", "w"), indent=2)
-shutil.copy(final, out / "roadguard_yolo11n.onnx")
+shutil.copy(final, out / "roadguard_yolo11n.onnx")          # always this name inside the zip
 for f in ["results.png", "results.csv", "confusion_matrix_normalized.png", "BoxPR_curve.png", "PR_curve.png",
           "labels.jpg", "val_batch0_pred.jpg"]:
-    for folder in ["/content/runs/roadguard", "/content/runs/test"]:
+    for folder in ["/content/runs/roadguard", "/content/runs/test", "/content/runs/local_test"]:
         p = Path(folder) / f
         if p.exists():
             shutil.copy(p, out / f"{Path(folder).name}_{f}")

@@ -17,7 +17,8 @@ import numpy as np
 from fastapi import HTTPException, UploadFile
 
 from app import config
-from app.database import execute_insert_and_get_id
+from app.database import execute_insert_and_get_id, execute_query
+from app.services.events import event_bus
 
 for folder in (config.UPLOAD_DIR, config.EVIDENCE_DIR, config.CHALLAN_DIR):
     os.makedirs(folder, exist_ok=True)
@@ -111,10 +112,10 @@ def save_image(image, prefix: str):
     return name
 
 
-def save_violation(job_id: int, camera_id, v: dict) -> int:
-    """Store one violation (and its 3 images). Returns the new violation_id."""
+def save_violation(job_id: int, camera_id, v: dict, source: str = "upload") -> int:
+    """Store one violation (and its 3 images), tell every open browser. Returns the new violation_id."""
     plate = v.get("plate") or {}
-    return execute_insert_and_get_id(
+    violation_id = execute_insert_and_get_id(
         """INSERT INTO Violations (job_id, camera_id, violation_type, confidence, low_confidence, riders,
                no_helmet_count, plate_text, plate_raw, plate_valid, plate_confidence, frame_time,
                evidence_file, crop_file, plate_file)
@@ -125,3 +126,12 @@ def save_violation(job_id: int, camera_id, v: dict) -> int:
          plate.get("confidence"), v.get("frame_time"),
          save_image(v["evidence"], "ev"), save_image(v["crop"], "crop"), save_image(v.get("plate_crop"), "plate")),
     )
+    camera = execute_query("SELECT name FROM Cameras WHERE camera_id = ?", (camera_id,), fetch_one=True) \
+        if camera_id else None
+    event_bus.publish({
+        "type": "violation", "violation_id": violation_id, "violation_type": v["type"],
+        "label": config.VIOLATION_LABELS.get(v["type"], v["type"]), "confidence": v["confidence"],
+        "camera": camera["name"] if camera else "Uploaded media", "plate": plate.get("plate"),
+        "source": source, "low_confidence": bool(v["low_confidence"]),
+    })
+    return violation_id

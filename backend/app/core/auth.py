@@ -9,7 +9,7 @@ Every protected route adds one of these as a dependency:
 The user is re-read from the database on every request, so a disabled
 account or a changed role takes effect immediately (not when the token expires).
 """
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from app.core.security import decode_token
@@ -18,16 +18,26 @@ from app.database import execute_query
 bearer = HTTPBearer(auto_error=False)
 
 
-def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(bearer)) -> dict:
+# While a user must change a temporary password, only these addresses work
+PASSWORD_CHANGE_PATHS = ("/auth/me", "/auth/change-password", "/events")
+
+
+def get_current_user(request: Request, credentials: HTTPAuthorizationCredentials = Depends(bearer)) -> dict:
     if credentials is None or not credentials.credentials:
         raise HTTPException(401, "Please log in.")
     payload = decode_token(credentials.credentials)
     user = execute_query(
-        "SELECT user_id, full_name, email, role, is_active FROM Users WHERE user_id = ?",
+        "SELECT user_id, full_name, email, role, is_active, must_change_password, token_version "
+        "FROM Users WHERE user_id = ?",
         (payload.get("user_id"),), fetch_one=True,
     )
     if not user or not user["is_active"]:
         raise HTTPException(401, "This account is disabled. Contact an admin.")
+    if (user.get("token_version") or 0) != payload.get("tv", 0):
+        # the password was changed (or "log out everywhere" was used) after this token was made
+        raise HTTPException(401, "Your session has ended. Please log in again.")
+    if user.get("must_change_password") and not request.url.path.endswith(PASSWORD_CHANGE_PATHS):
+        raise HTTPException(403, "Please change your temporary password first.")
     return user
 
 

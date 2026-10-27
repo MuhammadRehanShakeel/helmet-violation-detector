@@ -108,6 +108,9 @@ TRIPLE_RIDING_MIN = 3                                 # this many people on one 
 VIDEO_SAMPLE_FPS = 5
 TRACK_IOU = 0.30                                      # same bike in the next frame if boxes overlap this much
 TRACK_MAX_MISSING = 10                                # frames a bike may disappear before its track ends
+# CCTV / IP cameras watched in the background
+STREAM_FPS = 2                                        # frames analysed per second per camera
+MAX_STREAMS = 3                                       # cameras at the same time (CPU limit of a laptop)
 SCENE_CUT_DIFF = 40                                   # picture changes this much (0-255) = a cut: start fresh tracks
 MIN_VIOLATION_FRAMES = 2                              # a bike must break the rule in >= 2 frames (fewer false alarms)
 

@@ -32,6 +32,12 @@ def verify_password(plain: str, hashed: str) -> bool:
         return False
 
 
+def temporary_password() -> str:
+    """A random password an admin gives to a user; the user must change it at the next login."""
+    import secrets
+    return "Rg-" + secrets.token_urlsafe(9) + "7"
+
+
 def check_password_rules(password: str) -> None:
     """Reject weak passwords with a clear message."""
     if len(password) < config.PASSWORD_MIN_LENGTH:
@@ -43,11 +49,13 @@ def check_password_rules(password: str) -> None:
 # ---------------------------------------------------------------------------
 # Login tokens (JWT)
 # ---------------------------------------------------------------------------
-def create_token(user_id: int, email: str, role: str) -> str:
+def create_token(user_id: int, email: str, role: str, token_version: int = 0) -> str:
+    """token_version ("tv") goes up when the password changes -> all older tokens stop working."""
     payload = {
         "user_id": user_id,
         "email": email,
         "role": role,
+        "tv": token_version,
         "exp": datetime.now(timezone.utc) + timedelta(minutes=config.ACCESS_TOKEN_MINUTES),
     }
     return jwt.encode(payload, config.JWT_SECRET, algorithm=config.JWT_ALGORITHM)

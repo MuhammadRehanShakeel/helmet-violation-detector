@@ -147,6 +147,12 @@ export default function ViolationDialog({ id, onClose, onChanged }) {
                   {locked ? `Download e-challan ${v.challan_no}` : 'Issue e-challan (PDF)'}
                 </Button>
               )}
+              {v.challan_status && (
+                <Typography fontSize={13} color="text.secondary" sx={{ mt: 1, textAlign: 'center' }}>
+                  Challan status: <b style={{ textTransform: 'capitalize' }}>{v.challan_status}</b>
+                  {v.challan_status === 'cancelled' && ' (appeal accepted)'}
+                </Typography>
+              )}
             </Grid>
           </Grid>
         )}

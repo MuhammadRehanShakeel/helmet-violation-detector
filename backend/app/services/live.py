@@ -56,7 +56,7 @@ def process_frame(session: LiveSession, frame):
         frame_time = round(time.time() - session.started, 1)
         bikes, _ = session.video.feed(frame, frame_time)
         new = session.video.collect(list(session.video.tracker.tracks.values()), finished=False)
-        ids = [save_violation(session.job_id, session.camera_id, v) for v in new]
+        ids = [save_violation(session.job_id, session.camera_id, v, source="phone") for v in new]
         session.saved += len(ids)
         return {
             "bikes": [public_bike(b) for b in bikes],
@@ -71,7 +71,7 @@ def stop(session: LiveSession):
     with session.lock:
         new = session.video.finish()
         for v in new:
-            save_violation(session.job_id, session.camera_id, v)
+            save_violation(session.job_id, session.camera_id, v, source="phone")
         session.saved += len(new)
         execute_query(
             """UPDATE Jobs SET status = 'done', progress = 100, stage = 'Finished', motorcyclists = ?,

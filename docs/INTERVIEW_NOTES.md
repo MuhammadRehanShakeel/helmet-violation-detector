@@ -7,7 +7,7 @@ labelled images on a free Colab GPU, exported it to ONNX so it runs on a normal 
 the logic that turns boxes into violations: matching heads and plates to bikes, tracking bikes
 across video frames so each one is counted once, and plate voting. An officer reviews every
 detection before a PDF e-challan with a QR verification code is issued. Bystanders are blurred
-automatically. It's FastAPI + SQL Server + React, with role-based access and 85 automated tests."
+automatically. It's FastAPI + SQL Server + React, with role-based access and 103 automated tests."
 
 ## Likely questions
 
@@ -78,7 +78,7 @@ random QR codes, gitleaks in CI.
 * Full pipeline: caught 8/8 no-helmet riders on demo photos, only after I added the backup detector
 * Plates: **87.5% exact**, **96.7% precision** on accepted plates (400 held-out synthetic plates)
 * Speed: ~70-90 ms per frame on 2 CPU cores; 10.6 MB model
-* 85 automated tests, CI on every push
+* 103 automated tests, CI on every push
 
 ## The best story to tell
 "mAP said 94%, but when I ran the whole pipeline on demo photos it missed 7 of 12 violations. The

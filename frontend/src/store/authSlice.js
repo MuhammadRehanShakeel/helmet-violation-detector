@@ -21,6 +21,16 @@ const authSlice = createSlice({
   name: 'auth',
   initialState: { user: saved, token: sessionStorage.getItem('rg_token'), loading: false, error: null },
   reducers: {
+    setSession(state, action) {                 // after a password change the backend gives a fresh token
+      state.user = action.payload.user;
+      state.token = action.payload.access_token;
+      sessionStorage.setItem('rg_token', action.payload.access_token);
+      sessionStorage.setItem('rg_user', JSON.stringify(action.payload.user));
+    },
+    updateUser(state, action) {
+      state.user = { ...state.user, ...action.payload };
+      sessionStorage.setItem('rg_user', JSON.stringify(state.user));
+    },
     logout(state) {
       sessionStorage.clear();
       state.user = null;
@@ -50,5 +60,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { logout, clearError } = authSlice.actions;
+export const { logout, clearError, setSession, updateUser } = authSlice.actions;
 export default authSlice.reducer;

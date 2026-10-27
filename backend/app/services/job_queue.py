@@ -16,6 +16,7 @@ import cv2
 
 from app.database import execute_query
 from app.services import analyzer
+from app.services.events import event_bus
 from app.services.storage import save_violation
 
 log = logging.getLogger("jobs")
@@ -26,6 +27,8 @@ _worker = None
 def set_progress(job_id, progress, stage, status="running"):
     execute_query("UPDATE Jobs SET status = ?, progress = ?, stage = ? WHERE job_id = ?",
                   (status, progress, stage[:100], job_id), commit=True)
+    event_bus.publish({"type": "job", "job_id": job_id, "status": status, "progress": progress, "stage": stage},
+                      roles=("admin", "officer"))
 
 
 def run_job(job_id: int):
@@ -55,11 +58,15 @@ def run_job(job_id: int):
                    violations = ?, seconds_taken = ?, finished_at = SYSDATETIME() WHERE job_id = ?""",
             (bikes, len(violations), round(time.time() - started, 1), job_id), commit=True)
         log.info("Job %s done: %s bikes, %s violations", job_id, bikes, len(violations))
+        event_bus.publish({"type": "job", "job_id": job_id, "status": "done", "progress": 100,
+                           "violations": len(violations), "motorcyclists": bikes}, roles=("admin", "officer"))
     except Exception as e:
         log.exception("Job %s failed", job_id)
         message = str(e) if isinstance(e, (FileNotFoundError, ValueError)) else "Analysis failed. See logs/backend.log."
         execute_query("UPDATE Jobs SET status = 'failed', stage = 'Failed', error = ?, finished_at = SYSDATETIME() "
                       "WHERE job_id = ?", (message[:400], job_id), commit=True)
+        event_bus.publish({"type": "job", "job_id": job_id, "status": "failed", "error": message[:200]},
+                          roles=("admin", "officer"))
 
 
 def _loop():

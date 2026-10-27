@@ -31,7 +31,8 @@ router = APIRouter(tags=["Violations & e-challans"])
 COLUMNS = """v.violation_id, v.job_id, v.camera_id, c.name AS camera_name, c.location, v.violation_type,
              v.confidence, v.low_confidence, v.riders, v.no_helmet_count, v.plate_text, v.plate_raw,
              v.plate_valid, v.plate_confidence, v.frame_time, v.status, v.review_note, v.reviewed_at,
-             r.full_name AS reviewed_by_name, v.created_at, ch.challan_id, ch.challan_no"""
+             r.full_name AS reviewed_by_name, v.created_at, ch.challan_id, ch.challan_no,
+             ch.status AS challan_status"""
 FROM = """FROM Violations v LEFT JOIN Cameras c ON v.camera_id = c.camera_id
           LEFT JOIN Users r ON v.reviewed_by = r.user_id
           LEFT JOIN Challans ch ON ch.violation_id = v.violation_id"""
@@ -193,14 +194,14 @@ def verify_challan(code: str, request: Request):
     if not 10 <= len(code) <= 40:
         raise HTTPException(404, "No challan found for this code.")
     row = execute_query(
-        """SELECT ch.challan_no, ch.fine_amount, ch.issued_at, v.violation_type, v.plate_text
+        """SELECT ch.challan_no, ch.fine_amount, ch.issued_at, ch.status, v.violation_type, v.plate_text
            FROM Challans ch JOIN Violations v ON ch.violation_id = v.violation_id WHERE ch.verify_code = ?""",
         (code,), fetch_one=True)
     if not row:
         raise HTTPException(404, "No challan found for this code.")
     return {"valid": True, "challan_no": row["challan_no"], "fine": row["fine_amount"],
             "issued_at": row["issued_at"], "offence": config.VIOLATION_LABELS[row["violation_type"]],
-            "plate": mask_plate(row["plate_text"], "viewer")}
+            "plate": mask_plate(row["plate_text"], "viewer"), "status": row.get("status", "unpaid")}
 
 
 @router.get("/plates/{plate}")

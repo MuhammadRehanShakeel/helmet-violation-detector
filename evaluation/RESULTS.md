@@ -97,5 +97,6 @@ OCR only runs for offending bikes (at most 8 readings per bike), so it does not 
 
 ## 4. Automated tests
 
-85 tests (`backend/tests`), run on every push by GitHub Actions:
-rules (15), tracking (7), plates (26), analyser and decoder (8), API security (25), jobs and live camera (4).
+103 tests (`backend/tests`), run on every push by GitHub Actions:
+rules (15), tracking (7), plates (26), analyser and decoder (8), API security (25), jobs and live camera (4),
+v2 features (18: sessions, access requests, citizen portal, appeals, reports, CCTV demo stream, live events).

@@ -2,11 +2,12 @@
  * Dashboard.jsx - Numbers at a glance: violations, review progress, fines, busiest hours and cameras.
  */
 import { useEffect, useState } from 'react';
-import { Alert, Box, Chip, Grid, LinearProgress, Paper, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
+import { useSelector } from 'react-redux';
+import { Alert, Box, Button, Chip, Stack, Grid, LinearProgress, Paper, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
 import {
   Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from 'recharts';
-import api from '../services/api';
+import api, { downloadFile } from '../services/api';
 import PageHeader from '../components/PageHeader';
 import { colors } from '../theme';
 import { rupees } from '../utils/format';
@@ -38,10 +39,15 @@ export default function Dashboard() {
   const [days, setDays] = useState(30);
   const [data, setData] = useState(null);
   const [error, setError] = useState('');
+  const role = useSelector((s) => s.auth.user.role);
+  const tick = useSelector((s) => s.notifications.tick);       // new violation arrived -> refresh
 
   useEffect(() => {
     api.get('/stats/summary', { params: { days } }).then((r) => setData(r.data)).catch((e) => setError(e.message));
-  }, [days]);
+  }, [days, tick]);
+
+  const report = (kind) => downloadFile(`/reports/${kind}?days=${days}`,
+    kind === 'summary.pdf' ? `roadguard_report_${days}d.pdf` : `roadguard_violations_${days}d.csv`).catch((e) => setError(e.message));
 
   if (error) return <Alert severity="error">{error}</Alert>;
   if (!data) return <LinearProgress />;
@@ -60,9 +66,13 @@ export default function Dashboard() {
         title="Dashboard"
         subtitle="Violations detected by the AI and checked by officers"
         action={(
-          <ToggleButtonGroup size="small" exclusive value={days} onChange={(e, v) => v && setDays(v)}>
-            {[7, 30, 90].map((d) => <ToggleButton key={d} value={d}>{d} days</ToggleButton>)}
-          </ToggleButtonGroup>
+          <Stack direction="row" spacing={1} alignItems="center">
+            {role !== 'viewer' && <Button size="small" variant="outlined" onClick={() => report('summary.pdf')}>PDF report</Button>}
+            {role !== 'viewer' && <Button size="small" variant="outlined" onClick={() => report('violations.csv')}>Excel (CSV)</Button>}
+            <ToggleButtonGroup size="small" exclusive value={days} onChange={(e, v) => v && setDays(v)}>
+              {[7, 30, 90].map((d) => <ToggleButton key={d} value={d}>{d} days</ToggleButton>)}
+            </ToggleButtonGroup>
+          </Stack>
         )}
       />
       <Grid container spacing={2}>

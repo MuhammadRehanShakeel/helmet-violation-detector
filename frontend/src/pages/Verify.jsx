@@ -1,7 +1,7 @@
 /** Verify.jsx - PUBLIC page opened from the QR code on a paper e-challan. Shows only what the ticket shows. */
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { Alert, Box, Paper, Typography } from '@mui/material';
+import { Link as RouterLink, useParams } from 'react-router-dom';
+import { Alert, Box, Button, Chip, Paper, Typography } from '@mui/material';
 import VerifiedIcon from '@mui/icons-material/VerifiedOutlined';
 import api from '../services/api';
 import Logo from '../components/Logo';
@@ -30,6 +30,11 @@ export default function Verify() {
             <Typography sx={{ mt: 1 }}>Fine: <b>{rupees(data.fine)}</b></Typography>
             <Typography sx={{ mt: 1 }}>Issued: {dateTime(data.issued_at)}</Typography>
             <Box sx={{ mt: 1.5 }}><PlateBadge plate={data.plate} size={20} /></Box>
+            <Chip sx={{ mt: 2, textTransform: 'capitalize' }} label={data.status}
+              color={{ paid: 'success', cancelled: 'default', unpaid: 'warning' }[data.status] || 'default'} />
+            <Button component={RouterLink} to="/citizen" fullWidth variant="contained" sx={{ mt: 3 }}>
+              See the photo, pay or appeal
+            </Button>
           </Box>
         )}
       </Paper>
