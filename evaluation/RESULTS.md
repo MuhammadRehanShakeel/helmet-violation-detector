@@ -91,7 +91,7 @@ Examples fixed by the clean-up:
 |---|---|---|---|---|
 | Cloud VM, 2 vCPU (shared) | 68-87 ms | 450-550 ms | 4-5 | ~1× real time |
 | Colab CPU (from the notebook) | 91 ms | | | |
-| Your laptop | _run `run_evaluation.bat`_ | | | |
+| Your laptop | _run `scripts\windows\run_evaluation.bat`_ | | | |
 
 OCR only runs for offending bikes (at most 8 readings per bike), so it does not slow down every frame.
 

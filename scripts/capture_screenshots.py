@@ -6,7 +6,7 @@ Needs: the app running (start_project.bat) and DEMO_ACCOUNT.txt in the project f
     admin_password=...
 (DEMO_ACCOUNT.txt is git-ignored, so the password never goes to GitHub.)
 
-Run: capture_screenshots.bat   -> pictures are saved in docs/screenshots/
+Run: scripts\windows\capture_screenshots.bat   -> pictures are saved in docs/screenshots/
 Uses the Edge or Chrome already installed on the PC (nothing big to download).
 """
 import os

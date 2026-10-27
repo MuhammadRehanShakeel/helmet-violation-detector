@@ -108,8 +108,10 @@ Needs: Python 3.11, Node 20, SQL Server (Express is fine) + ODBC Driver 17.
 
 | Script | Does |
 |---|---|
-| `run_tests.bat` | all 85 tests |
-| `run_evaluation.bat` | plate accuracy + speed on your laptop |
+| `scripts\windows\run_tests.bat` | all 85 tests |
+| `scripts\windows\run_evaluation.bat` | plate accuracy + speed on your laptop |
+| `scripts\windows\capture_screenshots.bat` | screenshots of the running app |
+| `scripts\windows\update_github.bat` | push your changes to GitHub |
 
 **Android app:** in `frontend/.env` set `VITE_API_URL=http://<your-PC-Wi-Fi-IP>:5001`, set
 `API_HOST=0.0.0.0` in `backend/.env`, then `npm run android:sync` and `npm run android:open` (Android Studio).

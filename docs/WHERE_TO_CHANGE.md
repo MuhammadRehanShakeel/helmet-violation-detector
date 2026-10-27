@@ -28,4 +28,4 @@
 | Change ports | `API_PORT` in `.env` + `vite.config.js` | both |
 | Retrain with more data | add datasets in the notebook (step 3/4), run all | `training/train_roadguard_colab.ipynb` |
 
-After any backend change, run `run_tests.bat`. All tests must pass.
+After any backend change, run `scripts\windows\run_tests.bat`. All tests must pass.

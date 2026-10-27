@@ -1,6 +1,6 @@
 @echo off
 REM Upload new changes to GitHub.
-cd /d "%~dp0"
+cd /d "%~dp0..\.."
 git rm -r -q --cached . >nul
 git add .
 git status --short
